@@ -35,7 +35,11 @@ export class WishlistsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateWishlistDto, @Request() req) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateWishlistDto,
+    @Request() req,
+  ) {
     return this.wishlistsService.update(+id, dto, req.user);
   }
 

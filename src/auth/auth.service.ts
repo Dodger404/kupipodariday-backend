@@ -17,7 +17,7 @@ export class AuthService {
       ...signUpDto,
       password: hashedPassword,
     });
-    const { password, ...result } = newUser;
+    const { ...result } = newUser;
     return result;
   }
 

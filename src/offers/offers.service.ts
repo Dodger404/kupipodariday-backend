@@ -27,7 +27,8 @@ export class OffersService {
     });
 
     if (!wish) throw new NotFoundException('Подарок не найден');
-    if (wish.owner.id === user.id) throw new ForbiddenException('Нельзя скидываться на свой подарок');
+    if (wish.owner.id === user.id)
+      throw new ForbiddenException('Нельзя скидываться на свой подарок');
     if (Number(wish.raised) + Number(dto.amount) > Number(wish.price)) {
       throw new BadRequestException('Нельзя превысить стоимость подарка');
     }
