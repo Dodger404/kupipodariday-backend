@@ -9,6 +9,7 @@ import { Wish } from './entities/wish.entity';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { User } from 'src/users/entities/user.entity';
+import { excludePassword } from '../utils/exclude-password';
 
 @Injectable()
 export class WishesService {
@@ -22,31 +23,58 @@ export class WishesService {
     return this.wishRepo.save(wish);
   }
 
-  findAll() {
-    return this.wishRepo.find({ relations: ['owner'] });
+  async findAll() {
+    const wishes = await this.wishRepo.find({ relations: ['owner'] });
+
+    return wishes.map((wish) => ({
+      ...wish,
+      owner: excludePassword(wish.owner) as User,
+    }));
   }
 
-  findOne(id: number) {
-    return this.wishRepo.findOne({
+  async findOne(id: number) {
+    const wish = await this.wishRepo.findOne({
       where: { id },
-      relations: ['owner', 'offers'],
+      relations: ['owner', 'offers', 'offers.user'],
     });
+
+    if (!wish) throw new NotFoundException('Подарок не найден');
+
+    // Удаляем password у всех вложенных пользователей
+    wish.owner = excludePassword(wish.owner) as User;
+
+    wish.offers = wish.offers.map((offer) => ({
+      ...offer,
+      user: excludePassword(offer.user) as User,
+    }));
+
+    return wish;
   }
 
   async findLast(): Promise<Wish[]> {
-    return this.wishRepo.find({
+    const wishes = await this.wishRepo.find({
       order: { createdAt: 'DESC' },
       take: 40,
       relations: ['owner'],
     });
+
+    return wishes.map((wish) => ({
+      ...wish,
+      owner: excludePassword(wish.owner) as User,
+    }));
   }
 
   async findTop(): Promise<Wish[]> {
-    return this.wishRepo.find({
+    const wishes = await this.wishRepo.find({
       order: { copied: 'DESC' },
       take: 20,
       relations: ['owner'],
     });
+
+    return wishes.map((wish) => ({
+      ...wish,
+      owner: excludePassword(wish.owner) as User,
+    }));
   }
 
   async copyWish(id: number, user: User) {

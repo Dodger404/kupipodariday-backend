@@ -10,6 +10,7 @@ import { Offer } from './entities/offer.entity';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { User } from 'src/users/entities/user.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
+import { excludePassword } from '../utils/exclude-password';
 
 @Injectable()
 export class OffersService {
@@ -50,14 +51,24 @@ export class OffersService {
     return this.offerRepo.save(offer);
   }
 
-  findAll() {
-    return this.offerRepo.find({ relations: ['user', 'item'] });
+  async findAll() {
+    const offers = await this.offerRepo.find({ relations: ['user', 'item'] });
+
+    return offers.map((offer) => ({
+      ...offer,
+      user: excludePassword(offer.user) as User,
+    }));
   }
 
-  findOne(id: number) {
-    return this.offerRepo.findOne({
+  async findOne(id: number) {
+    const offer = await this.offerRepo.findOne({
       where: { id },
       relations: ['user', 'item'],
     });
+
+    if (!offer) throw new NotFoundException('Оффер не найден');
+
+    offer.user = excludePassword(offer.user) as User;
+    return offer;
   }
 }

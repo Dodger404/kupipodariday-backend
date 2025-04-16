@@ -6,7 +6,7 @@ import {
   Body,
   UseGuards,
   Request,
-  Query, Post,
+  Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';

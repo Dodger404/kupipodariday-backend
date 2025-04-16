@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { excludePassword } from '../utils/exclude-password';
 
 @Injectable()
 export class UsersService {
@@ -13,16 +14,48 @@ export class UsersService {
 
   async create(userData: Partial<User>) {
     const user = this.usersRepository.create(userData);
-    return this.usersRepository.save(user);
+    const saved = await this.usersRepository.save(user);
+    return excludePassword(saved);
+  }
+
+  async findByUsernameWithPassword(username: string) {
+    const user = await this.usersRepository.findOne({
+      where: { username },
+      relations: ['wishes'],
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        about: true,
+        avatar: true,
+        createdAt: true,
+        updatedAt: true,
+        password: true,
+      },
+    });
+
+    if (!user) throw new NotFoundException('Пользователь не найден');
+    return user;
   }
 
   async findByUsername(username: string) {
     const user = await this.usersRepository.findOne({
       where: { username },
       relations: ['wishes'],
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        about: true,
+        avatar: true,
+        createdAt: true,
+        updatedAt: true,
+        password: true,
+      },
     });
+
     if (!user) throw new NotFoundException('Пользователь не найден');
-    return user;
+    return excludePassword(user);
   }
 
   async updateUser(id: number, dto: UpdateUserDto) {
@@ -31,18 +64,24 @@ export class UsersService {
   }
 
   async findById(id: number) {
-    return this.usersRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id },
       relations: ['wishes'],
     });
+
+    if (!user) throw new NotFoundException('Пользователь не найден');
+    return excludePassword(user);
   }
 
   async findMany(query: string) {
-    return this.usersRepository.find({
+    const users = await this.usersRepository.find({
       where: [
         { username: ILike(`%${query}%`) },
         { email: ILike(`%${query}%`) },
       ],
+      relations: ['wishes'],
     });
+
+    return users.map((user) => excludePassword(user));
   }
 }

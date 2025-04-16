@@ -1,15 +1,12 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Wishlist } from './entities/wishlist.entity';
 import { CreateWishlistDto } from './dto/create-wishlist.dto';
 import { UpdateWishlistDto } from './dto/update-wishlist.dto';
 import { User } from 'src/users/entities/user.entity';
 import { Wish } from 'src/wishes/entities/wish.entity';
+import { excludePassword } from '../utils/exclude-password';
 
 @Injectable()
 export class WishlistsService {
@@ -30,15 +27,35 @@ export class WishlistsService {
     return this.wishlistRepo.save(wishlist);
   }
 
-  findAll() {
-    return this.wishlistRepo.find({ relations: ['owner', 'items'] });
-  }
-
-  findOne(id: number) {
-    return this.wishlistRepo.findOne({
-      where: { id },
+  async findAll() {
+    const wishlists = await this.wishlistRepo.find({
       relations: ['owner', 'items'],
     });
+
+    return wishlists.map((wishlist) => ({
+      ...wishlist,
+      owner: excludePassword(wishlist.owner) as User,
+    }));
+  }
+
+  async findOne(id: number) {
+    const wishlist = await this.wishlistRepo.findOne({
+      where: { id },
+      relations: ['owner', 'items', 'items.owner'],
+    });
+
+    if (!wishlist) throw new NotFoundException('Подборка не найдена');
+
+    // Удаляем пароль у владельца подборки
+    wishlist.owner = excludePassword(wishlist.owner) as User;
+
+    // Удаляем пароли у владельцев каждого подарка в подборке
+    wishlist.items = wishlist.items.map((item) => ({
+      ...item,
+      owner: excludePassword(item.owner) as User,
+    }));
+
+    return wishlist;
   }
 
   async update(id: number, dto: UpdateWishlistDto, user: User) {
@@ -52,12 +69,17 @@ export class WishlistsService {
       throw new ForbiddenException('Нельзя редактировать чужую подборку');
 
     if (dto.itemsId) {
-      const wishes = await this.wishRepo.findBy({ id: In(dto.itemsId) });
-      wishlist.items = wishes;
+      wishlist.items = await this.wishRepo.findBy({ id: In(dto.itemsId) });
     }
 
     Object.assign(wishlist, dto);
-    return this.wishlistRepo.save(wishlist);
+    const saved = await this.wishlistRepo.save(wishlist);
+    saved.owner = excludePassword(saved.owner) as User;
+    saved.items = saved.items.map((item) => ({
+      ...item,
+      owner: excludePassword(item.owner) as User,
+    }));
+    return saved;
   }
 
   async remove(id: number, user: User) {
