@@ -60,22 +60,21 @@ Authorization: Bearer {{access_token_here}}
 
 ### 📰 Последние 40 подарков
 GET http://localhost:3000/wishes/last
-Authorization: Bearer {{access_token_here}}
 
 ### 🏆 Топ 20 популярных подарков
 GET http://localhost:3000/wishes/top
-Authorization: Bearer {{access_token_here}}
 
 ### 📥 Скопировать подарок (не свой!)
 POST http://localhost:3000/wishes/1/copy
 Authorization: Bearer {{access_token_here}}
 
-### 💸 Скинуться на подарок (например, ID 2)
-POST http://localhost:3000/offers/2
+### 💸 Скинуться на подарок
+POST http://localhost:3000/offers
 Authorization: Bearer {{access_token_here}}
 Content-Type: application/json
 
 {
+  "itemId": 2,
   "amount": 100,
   "hidden": false
 }
@@ -137,11 +136,11 @@ Content-Type: application/json
 }
 
 ### 🔍 Найти пользователей
-GET http://localhost:3000/users/find?query=test
+POST http://localhost:3000/users/find?query=test
 Authorization: Bearer {{access_token_here}}
 
 ### 👀 Чужой профиль по username
 GET http://localhost:3000/users/second_user
 Authorization: Bearer {{access_token_here}}
 
-#eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoia2lyaWxsIiwiaWF0IjoxNzQ0NzE5MzMzLCJleHAiOjE3NDQ4MDU3MzN9.-PVky5-61q6lzjuf1vmFGT2Srb402FtTckEnoibi9KI
+#eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoia2lyaWxsIiwiaWF0IjoxNzQ0NzUzODUzLCJleHAiOjE3NDQ4NDAyNTN9.cOpD2zYXB5Pt2niPosiP6k_NtJ73Cg31V_-Hhl9herw

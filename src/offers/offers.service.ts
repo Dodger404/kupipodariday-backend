@@ -20,11 +20,15 @@ export class OffersService {
     private readonly wishRepo: Repository<Wish>,
   ) {}
 
-  async create(dto: CreateOfferDto, user: User, wishId: number) {
+  async create(dto: CreateOfferDto, user: User) {
     const wish = await this.wishRepo.findOne({
-      where: { id: wishId },
-      relations: ['owner'],
+      where: { id: dto.itemId },
+      relations: ['owner', 'offers'],
     });
+
+    if (!wish) {
+      throw new NotFoundException('Подарок не найден');
+    }
 
     if (!wish) throw new NotFoundException('Подарок не найден');
     if (wish.owner.id === user.id)

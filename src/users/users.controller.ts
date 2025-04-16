@@ -6,7 +6,7 @@ import {
   Body,
   UseGuards,
   Request,
-  Query,
+  Query, Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
@@ -27,8 +27,8 @@ export class UsersController {
     return this.usersService.updateUser(req.user.id, dto);
   }
 
-  @Get('find')
-  findUsers(@Query('query') query: string) {
+  @Post('find')
+  findUsers(@Body('query') query: string) {
     return this.usersService.findMany(query);
   }
 

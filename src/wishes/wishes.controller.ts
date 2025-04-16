@@ -14,16 +14,17 @@ import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 
-@UseGuards(JwtAuthGuard)
 @Controller('wishes')
 export class WishesController {
   constructor(private readonly wishesService: WishesService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateWishDto, @Request() req) {
     return this.wishesService.create(dto, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.wishesService.findAll();
@@ -39,21 +40,25 @@ export class WishesController {
     return this.wishesService.findTop();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.wishesService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateWishDto, @Request() req) {
     return this.wishesService.update(+id, dto, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @Request() req) {
     return this.wishesService.remove(+id, req.user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post(':id/copy')
   copyWish(@Param('id') id: string, @Request() req) {
     return this.wishesService.copyWish(+id, req.user);

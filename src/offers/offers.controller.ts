@@ -16,13 +16,9 @@ import { JwtAuthGuard } from 'src/auth/jwt.guard';
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 
-  @Post(':wishId')
-  create(
-    @Param('wishId') wishId: string,
-    @Body() dto: CreateOfferDto,
-    @Request() req,
-  ) {
-    return this.offersService.create(dto, req.user, +wishId);
+  @Post()
+  create(@Body() dto: CreateOfferDto, @Request() req) {
+    return this.offersService.create(dto, req.user);
   }
 
   @Get()

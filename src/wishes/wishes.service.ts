@@ -56,8 +56,6 @@ export class WishesService {
     });
 
     if (!wish) throw new NotFoundException('Подарок не найден');
-    if (wish.owner.id === user.id)
-      throw new ForbiddenException('Нельзя копировать свой подарок');
 
     wish.copied += 1;
     await this.wishRepo.save(wish);
